@@ -228,6 +228,20 @@ export default function HomePage() {
     });
   };
 
+  const handleProjectFocus = (
+    event: React.FocusEvent<HTMLAnchorElement>,
+    project: Project
+  ) => {
+    setActiveProject(project);
+
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    setPreviewPosition({
+      x: rect.right + 36,
+      y: rect.top + rect.height / 2,
+    });
+  };
+
   return (
     <section
       className={`relative z-10 min-h-screen select-none overflow-hidden ${mainText}`}
@@ -241,16 +255,7 @@ export default function HomePage() {
               onMouseEnter={(event) => handleProjectMouseMove(event, project)}
               onMouseMove={(event) => handleProjectMouseMove(event, project)}
               onMouseLeave={() => setActiveProject(null)}
-              onFocus={(event) => {
-                setActiveProject(project);
-
-                const rect = event.currentTarget.getBoundingClientRect();
-
-                setPreviewPosition({
-                  x: rect.right + 36,
-                  y: rect.top + rect.height / 2,
-                });
-              }}
+              onFocus={(event) => handleProjectFocus(event, project)}
               onBlur={() => setActiveProject(null)}
               className={`group relative grid grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${hoverText} hover:font-semibold ${
                 isLightMode
@@ -293,7 +298,7 @@ export default function HomePage() {
                   <span
                     className={`${secondaryText} opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
                   >
-                    (purdue alum)
+                    (from purdue)
                   </span>
                 </span>
               </h1>
