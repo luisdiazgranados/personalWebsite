@@ -5,7 +5,7 @@ import AsciiPaintBackground from "@/components/background/AsciiPaintBackground";
 export const metadata: Metadata = {
   title: "Luis Diaz Granados",
   description:
-    "Personal portfolio and blog for Luis Diaz Granados, a Computer Engineering student at Purdue.",
+    "Personal portfolio and blog for Luis Diaz Granados",
 };
 
 export default function RootLayout({
