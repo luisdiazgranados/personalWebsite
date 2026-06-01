@@ -18,14 +18,14 @@ type AsciiCell = {
 
 const ASCII_CHARS = ["0", "1", "{", "}", "<", ">", "/", "\\", "+", "-", "."];
 
-const CELL_SIZE = 16;
-const FONT_SIZE = 11;
+const CELL_SIZE = 10;
+const FONT_SIZE = 7;
 
 const MIN_BRUSH_RADIUS = 12;
-const MAX_BRUSH_RADIUS = 32;
+const MAX_BRUSH_RADIUS = 28;
 
-const BASE_OPACITY = 0.18;
-const MAX_OPACITY = 0.32;
+const BASE_OPACITY = 0.30;
+const MAX_OPACITY = 0.50;
 
 const FADE_DELAY_AFTER_STOP = 1300;
 
@@ -37,8 +37,8 @@ const FALL_THROUGH_SPEED = 47;
 
 const SIDE_SPREAD_CHANCE = 0.7;
 
-const MAX_CELLS = 2400;
-const PAINT_DENSITY = 0.6;
+const MAX_CELLS = 2000;
+const PAINT_DENSITY = 0.85;
 const FRAME_INTERVAL = 1000 / 30;
 const SAND_COLLISION_ZONE = 220;
 
@@ -361,6 +361,11 @@ export default function AsciiPaintBackground() {
 
       lastFrameTimeRef.current = timestamp;
 
+      if (cellsRef.current.size === 0) {
+        landedGridRef.current.clear();
+        return;
+      }
+
       context.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       context.font = `${FONT_SIZE}px "Authentic Sans", Arial, Helvetica, sans-serif`;
@@ -374,6 +379,9 @@ export default function AsciiPaintBackground() {
       if (shouldStartNewFall) {
         startDroppingPileIfReady(now);
       }
+
+      const isLightMode =
+        !document.documentElement.classList.contains("dark-mode");
 
       for (const [id, cell] of cellsRef.current) {
         if (shouldStartNewFall && cell.state === "painted") {
@@ -404,18 +412,11 @@ export default function AsciiPaintBackground() {
           continue;
         }
 
-        const isLightMode =
-          !document.documentElement.classList.contains("dark-mode");
-
         context.fillStyle = isLightMode
           ? `rgba(0, 122, 255, ${cell.opacity})`
           : `rgba(130, 150, 170, ${cell.opacity})`;
 
         context.fillText(cell.char, cell.x, cell.y);
-      }
-
-      if (cellsRef.current.size === 0) {
-        landedGridRef.current.clear();
       }
     };
 
