@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AsciiPaintBackground from "@/components/background/AsciiPaintBackground";
+import ConsoleMessage from "@/components/ConsoleMessage";
 
 export const metadata: Metadata = {
   title: "Luis Diaz Granados",
@@ -16,8 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-neutral-950 text-neutral-100 antialiased">
-        <AsciiPaintBackground />
-
+        <ConsoleMessage />
         <main className="relative z-10 min-h-screen">
           {children}
         </main>

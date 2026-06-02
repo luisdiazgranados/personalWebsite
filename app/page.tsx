@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type MouseEvent } from "react";
+import AsciiPaintBackground from "@/components/background/AsciiPaintBackground";
 
 type ProjectFrame = "desktop" | "phone";
 
@@ -268,6 +269,8 @@ export default function HomePage() {
   };
 
   return (
+    <>
+    <AsciiPaintBackground />
     <section
       className={`relative z-10 min-h-screen select-none overflow-hidden ${mainText}`}
     >
@@ -344,7 +347,7 @@ export default function HomePage() {
                   <span
                     className={`${secondaryText} opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
                   >
-                    (from purdue)
+                    (purdue alum)
                   </span>
                 </span>
               </h1>
@@ -387,5 +390,6 @@ export default function HomePage() {
         </div>
       </div>
     </section>
+    </>
   );
 }
