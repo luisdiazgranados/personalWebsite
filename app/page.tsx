@@ -11,10 +11,22 @@ type Project = {
   frame: ProjectFrame;
   description: string;
   stack: string[];
-  media: string | null;
+  media: string | string[] | null;
+  link: string | null;
 };
 
 const projects: Project[] = [
+    {
+    title: "Network Supervisor",
+    year: "2025",
+    slug: "network-supervisor",
+    frame: "desktop",
+    description:
+      "A supervisory control concept for inflight Wi-Fi systems made in collaboration with Société Européenne des Satellites (SES) using explicit state-driven recovery and device health monitoring. Won Purdue Senior Design Award in Spring 2026.",
+    stack: ["Embedded", "CAN", "UART", "Systems"],
+    media: "/videos/network-supervisor/fault-injection-test.mov",
+    link: null,
+  },
   {
     title: "Graphics Engine",
     year: "2026",
@@ -23,7 +35,11 @@ const projects: Project[] = [
     description:
       "A real-time graphics engine with lighting, texture mapping, dual cameras, and rendering/debugging experiments.",
     stack: ["C++", "OpenGL", "GLSL", "CMake"],
-    media: "/images/projects/graphics-engine.png",
+    media: [
+      "/videos/graphics-engine/demo-1.mov",
+      "/videos/graphics-engine/demo-2.mov",
+    ],
+    link: "https://github.com/luisdiazgranados/computerGraphics",
   },
   {
     title: "Music Mood Model",
@@ -33,7 +49,8 @@ const projects: Project[] = [
     description:
       "A machine learning project that classifies songs by mood using audio features and arousal/valence labels.",
     stack: ["Python", "scikit-learn", "pandas"],
-    media: "/images/projects/music-mood-model.png",
+    media: null,
+    link: "https://github.com/luisdiazgranados/ECE570Project",
   },
   {
     title: "JOS Operating System",
@@ -43,17 +60,8 @@ const projects: Project[] = [
     description:
       "Operating systems work focused on memory management, environments, traps, syscalls, and low-level debugging.",
     stack: ["C", "x86", "GDB", "QEMU"],
-    media: "/images/projects/jos-os.png",
-  },
-  {
-    title: "Network Supervisor",
-    year: "2025",
-    slug: "network-supervisor",
-    frame: "desktop",
-    description:
-      "A supervisory control concept for inflight Wi-Fi systems using explicit state-driven recovery and device health monitoring.",
-    stack: ["Embedded", "CAN", "UART", "Systems"],
     media: null,
+    link: "https://github.com/luisdiazgranados/jos_fork",
   },
 ];
 
@@ -96,7 +104,7 @@ function ProjectPreview({
         className={`${
           isPhone
             ? "h-[480px] w-[250px] rounded-[38px]"
-            : "h-[350px] w-[520px] rounded-[30px]"
+            : "w-[520px] rounded-[30px]"
         } overflow-hidden border shadow-2xl backdrop-blur-[40px] backdrop-saturate-200 transition-transform duration-150 ${
           isLightMode
             ? "border-white/60 bg-white/25 shadow-black/15"
@@ -118,22 +126,39 @@ function ProjectPreview({
           }`}
         >
           {project.media ? (
-            project.media.endsWith(".mp4") ? (
-              <video
-                src={project.media}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <img
-                src={project.media}
-                alt={`${project.title} preview`}
-                className="h-full w-full object-cover"
-              />
-            )
+            (() => {
+              const items = Array.isArray(project.media)
+                ? project.media
+                : [project.media];
+              return (
+                <div className="flex h-full w-full">
+                  {items.map((src) =>
+                    src.endsWith(".mp4") || src.endsWith(".mov") ? (
+                      <video
+                        key={src}
+                        src={src}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className={`h-full object-cover ${
+                          items.length > 1 ? "w-1/2" : "w-full"
+                        }`}
+                      />
+                    ) : (
+                      <img
+                        key={src}
+                        src={src}
+                        alt={`${project.title} preview`}
+                        className={`h-full object-cover ${
+                          items.length > 1 ? "w-1/2" : "w-full"
+                        }`}
+                      />
+                    )
+                  )}
+                </div>
+              );
+            })()
           ) : (
             <div
               className={`text-[13px] ${
@@ -248,30 +273,51 @@ export default function HomePage() {
     >
       <div className="relative mx-[36px] min-h-screen">
         <div className="absolute left-[104px] top-1/2 w-[272px] -translate-y-1/2">
-          {projects.map((project) => (
-            <a
-              key={project.title}
-              href={`/projects/${project.slug}`}
-              onMouseEnter={(event) => handleProjectMouseMove(event, project)}
-              onMouseMove={(event) => handleProjectMouseMove(event, project)}
-              onMouseLeave={() => setActiveProject(null)}
-              onFocus={(event) => handleProjectFocus(event, project)}
-              onBlur={() => setActiveProject(null)}
-              className={`group relative grid grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${hoverText} hover:font-semibold ${
-                isLightMode
-                  ? "hover:bg-white/25 hover:shadow-[0_10px_35px_rgba(0,0,0,0.10)] hover:ring-1 hover:ring-white/60 hover:backdrop-blur-[24px] hover:backdrop-saturate-200"
-                  : "hover:bg-white/[0.10] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:ring-1 hover:ring-white/15 hover:backdrop-blur-[24px]"
-              }`}
-            >
-              <span>{project.title}</span>
+          {projects.map((project) => {
+            const className = `group relative grid grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${hoverText} hover:font-semibold ${
+              isLightMode
+                ? "hover:bg-white/25 hover:shadow-[0_10px_35px_rgba(0,0,0,0.10)] hover:ring-1 hover:ring-white/60 hover:backdrop-blur-[24px] hover:backdrop-saturate-200"
+                : "hover:bg-white/[0.10] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:ring-1 hover:ring-white/15 hover:backdrop-blur-[24px]"
+            }`;
+            const children = (
+              <>
+                <span>{project.title}</span>
+                <span
+                  className={`text-neutral-500 transition ${yearHover} group-hover:font-semibold`}
+                >
+                  {project.year}
+                </span>
+              </>
+            );
+            const hoverProps = {
+              onMouseEnter: (event: MouseEvent<HTMLElement>) =>
+                handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
+              onMouseMove: (event: MouseEvent<HTMLElement>) =>
+                handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
+              onMouseLeave: () => setActiveProject(null),
+            };
 
-              <span
-                className={`text-neutral-500 transition ${yearHover} group-hover:font-semibold`}
+            return project.link ? (
+              <a
+                key={project.title}
+                href={project.link}
+                target="_blank"
+                rel="noreferrer"
+                className={className}
+                {...hoverProps}
               >
-                {project.year}
-              </span>
-            </a>
-          ))}
+                {children}
+              </a>
+            ) : (
+              <div
+                key={project.title}
+                className={className}
+                {...hoverProps}
+              >
+                {children}
+              </div>
+            );
+          })}
         </div>
 
         <ProjectPreview
