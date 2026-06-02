@@ -24,7 +24,7 @@ const projects: Project[] = [
     description:
       "A supervisory control concept for inflight Wi-Fi systems made in collaboration with Société Européenne des Satellites (SES) using explicit state-driven recovery and device health monitoring. Won Purdue Senior Design Award in Spring 2026.",
     stack: ["Embedded", "CAN", "UART", "Systems"],
-    media: "/videos/network-supervisor/fault-injection-test.mov",
+    media: "/videos/network-supervisor/fault-injection-test.mp4",
     link: null,
   },
   {
