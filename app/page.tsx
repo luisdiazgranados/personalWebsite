@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState, useRef, type MouseEvent } from "react";
 import AsciiPaintBackground from "@/components/background/AsciiPaintBackground";
 
 type ProjectFrame = "desktop" | "phone";
@@ -79,6 +79,35 @@ function getGlassBubbleClasses(isLightMode: boolean, hoverText: string) {
   }`;
 }
 
+function ProjectMedia({ project }: { project: Project }) {
+  if (!project.media) return null;
+  const items = Array.isArray(project.media) ? project.media : [project.media];
+  return (
+    <div className="flex h-full w-full">
+      {items.map((src) =>
+        src.endsWith(".mp4") || src.endsWith(".mov") ? (
+          <video
+            key={src}
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`h-full object-cover ${items.length > 1 ? "w-1/2" : "w-full"}`}
+          />
+        ) : (
+          <img
+            key={src}
+            src={src}
+            alt={`${project.title} preview`}
+            className={`h-full object-cover ${items.length > 1 ? "w-1/2" : "w-full"}`}
+          />
+        )
+      )}
+    </div>
+  );
+}
+
 function ProjectPreview({
   project,
   isLightMode,
@@ -94,7 +123,7 @@ function ProjectPreview({
 
   return (
     <aside
-      className="pointer-events-none fixed z-40 transition-opacity duration-200"
+      className="pointer-events-none fixed z-40 hidden transition-opacity duration-200 md:block"
       style={{
         left: position.x,
         top: position.y,
@@ -127,39 +156,7 @@ function ProjectPreview({
           }`}
         >
           {project.media ? (
-            (() => {
-              const items = Array.isArray(project.media)
-                ? project.media
-                : [project.media];
-              return (
-                <div className="flex h-full w-full">
-                  {items.map((src) =>
-                    src.endsWith(".mp4") || src.endsWith(".mov") ? (
-                      <video
-                        key={src}
-                        src={src}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className={`h-full object-cover ${
-                          items.length > 1 ? "w-1/2" : "w-full"
-                        }`}
-                      />
-                    ) : (
-                      <img
-                        key={src}
-                        src={src}
-                        alt={`${project.title} preview`}
-                        className={`h-full object-cover ${
-                          items.length > 1 ? "w-1/2" : "w-full"
-                        }`}
-                      />
-                    )
-                  )}
-                </div>
-              );
-            })()
+            <ProjectMedia project={project} />
           ) : (
             <div
               className={`text-[13px] ${
@@ -212,17 +209,106 @@ function ProjectPreview({
   );
 }
 
+// Mobile inline card for tapped project
+function MobileProjectCard({
+  project,
+  isLightMode,
+}: {
+  project: Project;
+  isLightMode: boolean;
+}) {
+  return (
+    <div
+      className={`mt-2 overflow-hidden rounded-2xl border backdrop-blur-[24px] backdrop-saturate-200 ${
+        isLightMode
+          ? "border-white/60 bg-white/25 shadow-black/10"
+          : "border-white/15 bg-white/[0.10] shadow-black/40"
+      }`}
+      style={{
+        boxShadow: isLightMode
+          ? "0 12px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.45)"
+          : "0 12px 40px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.10)",
+      }}
+    >
+      {project.media && (
+        <div className="flex h-[140px] items-center justify-center overflow-hidden">
+          <ProjectMedia project={project} />
+        </div>
+      )}
+
+      <div className="p-4">
+        <p
+          className={`text-[13px] leading-snug tracking-[-0.01em] ${
+            isLightMode ? "text-neutral-700" : "text-neutral-300"
+          }`}
+        >
+          {project.description}
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {project.stack.map((item) => (
+            <span
+              key={item}
+              className={`rounded-full border px-2 py-0.5 text-[10px] backdrop-blur-[16px] ${
+                isLightMode
+                  ? "border-white/45 bg-white/20 text-neutral-700"
+                  : "border-white/10 bg-white/[0.07] text-neutral-300"
+              }`}
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+
+        {project.link && (
+          <a
+            href={project.link}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-block text-[12px] text-[#007AFF]"
+          >
+            view on github →
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [isLightMode, setIsLightMode] = useState(true);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
+  const [tappedProject, setTappedProject] = useState<Project | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [previewPosition, setPreviewPosition] = useState<PreviewPosition>({
     x: 410,
     y: 360,
   });
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark-mode", !isLightMode);
   }, [isLightMode]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Close tapped project when clicking outside
+  useEffect(() => {
+    if (!tappedProject) return;
+    const handleTapOutside = (e: globalThis.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-project-row]")) {
+        setTappedProject(null);
+      }
+    };
+    document.addEventListener("click", handleTapOutside);
+    return () => document.removeEventListener("click", handleTapOutside);
+  }, [tappedProject]);
 
   const mainText = isLightMode ? "text-neutral-950" : "text-neutral-100";
   const secondaryText = isLightMode ? "text-neutral-600" : "text-neutral-400";
@@ -238,6 +324,7 @@ export default function HomePage() {
     event: MouseEvent<HTMLAnchorElement>,
     project: Project
   ) => {
+    if (isMobile) return;
     setActiveProject(project);
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -254,142 +341,218 @@ export default function HomePage() {
     });
   };
 
-  const handleProjectFocus = (
-    event: React.FocusEvent<HTMLAnchorElement>,
-    project: Project
-  ) => {
-    setActiveProject(project);
+  const handleProjectTap = (project: Project) => {
+    if (!isMobile) return;
+    setTappedProject((prev) => (prev === project ? null : project));
+  };
 
-    const rect = event.currentTarget.getBoundingClientRect();
-
-    setPreviewPosition({
-      x: rect.right + 36,
-      y: rect.top + rect.height / 2,
-    });
+  const activeClass = (project: Project) => {
+    if (!isMobile || tappedProject !== project) return "";
+    return isLightMode
+      ? "bg-white/25 shadow-[0_10px_35px_rgba(0,0,0,0.10)] ring-1 ring-white/60 backdrop-blur-[24px] backdrop-saturate-200 font-semibold"
+      : "bg-white/[0.10] shadow-[0_10px_30px_rgba(0,0,0,0.35)] ring-1 ring-white/15 backdrop-blur-[24px] font-semibold";
   };
 
   return (
     <>
-    <AsciiPaintBackground />
-    <section
-      className={`relative z-10 min-h-screen select-none overflow-hidden ${mainText}`}
-    >
-      <div className="relative mx-[36px] min-h-screen">
-        <div className="absolute left-[104px] top-1/2 w-[272px] -translate-y-1/2">
-          {projects.map((project) => {
-            const className = `group relative grid grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${hoverText} hover:font-semibold ${
-              isLightMode
-                ? "hover:bg-white/25 hover:shadow-[0_10px_35px_rgba(0,0,0,0.10)] hover:ring-1 hover:ring-white/60 hover:backdrop-blur-[24px] hover:backdrop-saturate-200"
-                : "hover:bg-white/[0.10] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:ring-1 hover:ring-white/15 hover:backdrop-blur-[24px]"
-            }`;
-            const children = (
-              <>
-                <span>{project.title}</span>
-                <span
-                  className={`text-neutral-500 transition ${yearHover} group-hover:font-semibold`}
-                >
-                  {project.year}
-                </span>
-              </>
-            );
-            const hoverProps = {
-              onMouseEnter: (event: MouseEvent<HTMLElement>) =>
-                handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
-              onMouseMove: (event: MouseEvent<HTMLElement>) =>
-                handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
-              onMouseLeave: () => setActiveProject(null),
-            };
-
-            return project.link ? (
-              <a
-                key={project.title}
-                href={project.link}
-                target="_blank"
-                rel="noreferrer"
-                className={className}
-                {...hoverProps}
-              >
-                {children}
-              </a>
-            ) : (
-              <div
-                key={project.title}
-                className={className}
-                {...hoverProps}
-              >
-                {children}
-              </div>
-            );
-          })}
-        </div>
-
-        <ProjectPreview
-          project={activeProject}
-          isLightMode={isLightMode}
-          position={previewPosition}
-        />
-
-        <div className="fixed left-[51.5%] top-1/2 z-30 -translate-y-1/2">
-          <div className="whitespace-nowrap">
-            <button
-              type="button"
-              onClick={() => setIsLightMode((current) => !current)}
-              className="cursor-pointer text-left"
-              aria-label="Toggle light mode"
-            >
-              <h1
-                className={`text-[20px] font-semibold leading-tight tracking-[-0.03em] ${mainText}`}
-              >
-                Luis Diaz Granados,
-                <br />
-                <span className="group inline-flex items-baseline gap-1.5">
-                  <span>computer engineer</span>
+      {!isMobile && <AsciiPaintBackground />}
+      <section
+        ref={sectionRef}
+        className={`relative z-10 min-h-screen select-none overflow-hidden ${mainText}`}
+      >
+        {/* Desktop layout */}
+        <div className="relative mx-[36px] hidden min-h-screen md:block">
+          <div className="absolute left-[104px] top-1/2 w-[272px] -translate-y-1/2">
+            {projects.map((project) => {
+              const className = `group relative grid grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${hoverText} hover:font-semibold ${
+                isLightMode
+                  ? "hover:bg-white/25 hover:shadow-[0_10px_35px_rgba(0,0,0,0.10)] hover:ring-1 hover:ring-white/60 hover:backdrop-blur-[24px] hover:backdrop-saturate-200"
+                  : "hover:bg-white/[0.10] hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] hover:ring-1 hover:ring-white/15 hover:backdrop-blur-[24px]"
+              }`;
+              const children = (
+                <>
+                  <span>{project.title}</span>
                   <span
-                    className={`${secondaryText} opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
+                    className={`text-neutral-500 transition ${yearHover} group-hover:font-semibold`}
                   >
-                    (purdue alum)
+                    {project.year}
                   </span>
-                </span>
-              </h1>
-            </button>
+                </>
+              );
+              const hoverProps = {
+                onMouseEnter: (event: MouseEvent<HTMLElement>) =>
+                  handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
+                onMouseMove: (event: MouseEvent<HTMLElement>) =>
+                  handleProjectMouseMove(event as MouseEvent<HTMLAnchorElement>, project),
+                onMouseLeave: () => setActiveProject(null),
+              };
 
-            <nav
-              className={`mt-6 flex gap-2 text-[19px] leading-none ${navText}`}
-            >
-              <a className={navBubbleClass} href="/about">
-                about
-              </a>
+              return project.link ? (
+                <a
+                  key={project.title}
+                  href={project.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={className}
+                  {...hoverProps}
+                >
+                  {children}
+                </a>
+              ) : (
+                <div
+                  key={project.title}
+                  className={className}
+                  {...hoverProps}
+                >
+                  {children}
+                </div>
+              );
+            })}
+          </div>
 
-              <a className={navBubbleClass} href="mailto:pipedga@gmail.com">
-                email
-              </a>
+          <ProjectPreview
+            project={activeProject}
+            isLightMode={isLightMode}
+            position={previewPosition}
+          />
 
-              <a
-                className={navBubbleClass}
-                href="https://www.linkedin.com/in/luisdiazgranados/"
-                target="_blank"
-                rel="noreferrer"
+          <div className="fixed left-[51.5%] top-1/2 z-30 -translate-y-1/2">
+            <div className="whitespace-nowrap">
+              <button
+                type="button"
+                onClick={() => setIsLightMode((current) => !current)}
+                className="cursor-pointer text-left"
+                aria-label="Toggle light mode"
               >
-                linkedin
-              </a>
+                <h1
+                  className={`text-[20px] font-semibold leading-tight tracking-[-0.03em] ${mainText}`}
+                >
+                  Luis Diaz Granados,
+                  <br />
+                  <span className="group inline-flex items-baseline gap-1.5">
+                    <span>computer engineer</span>
+                    <span
+                      className={`${secondaryText} opacity-0 transition-opacity duration-200 group-hover:opacity-100`}
+                    >
+                      (purdue alum)
+                    </span>
+                  </span>
+                </h1>
+              </button>
 
-              <a
-                className={navBubbleClass}
-                href="https://github.com/luisdiazgranados"
-                target="_blank"
-                rel="noreferrer"
+              <nav
+                className={`mt-6 flex gap-2 text-[19px] leading-none ${navText}`}
               >
-                github
-              </a>
+                <a className={navBubbleClass} href="/about">
+                  about
+                </a>
 
-              <a className={navBubbleClass} href="/blog">
-                blog
-              </a>
-            </nav>
+                <a className={navBubbleClass} href="mailto:pipedga@gmail.com">
+                  email
+                </a>
+
+                <a
+                  className={navBubbleClass}
+                  href="https://www.linkedin.com/in/luisdiazgranados/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  linkedin
+                </a>
+
+                <a
+                  className={navBubbleClass}
+                  href="https://github.com/luisdiazgranados"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  github
+                </a>
+
+                <a className={navBubbleClass} href="/blog">
+                  blog
+                </a>
+              </nav>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+
+        {/* Mobile layout */}
+        <div className="flex min-h-screen flex-col justify-center px-6 py-16 md:hidden">
+          <button
+            type="button"
+            onClick={() => setIsLightMode((current) => !current)}
+            className="cursor-pointer text-left"
+            aria-label="Toggle light mode"
+          >
+            <h1
+              className={`text-[22px] font-semibold leading-tight tracking-[-0.03em] ${mainText}`}
+            >
+              Luis Diaz Granados,
+              <br />
+              <span className={secondaryText}>computer engineer</span>
+            </h1>
+          </button>
+
+          <div className="mt-8">
+            {projects.map((project) => (
+              <div key={project.title} data-project-row>
+                <button
+                  type="button"
+                  onClick={() => handleProjectTap(project)}
+                  className={`group relative grid w-full grid-cols-[1fr_auto] rounded-full px-4 py-2.5 text-left text-[15px] font-normal leading-none tracking-[-0.03em] ${secondaryText} transition-all duration-200 ${activeClass(project)}`}
+                >
+                  <span className={tappedProject === project ? mainText : ""}>{project.title}</span>
+                  <span className="text-neutral-500">
+                    {project.year}
+                  </span>
+                </button>
+
+                {tappedProject === project && (
+                  <MobileProjectCard
+                    project={project}
+                    isLightMode={isLightMode}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <nav
+            className={`mt-8 flex flex-wrap gap-2 text-[17px] leading-none ${navText}`}
+          >
+            <a className={navBubbleClass} href="/about">
+              about
+            </a>
+
+            <a className={navBubbleClass} href="mailto:pipedga@gmail.com">
+              email
+            </a>
+
+            <a
+              className={navBubbleClass}
+              href="https://www.linkedin.com/in/luisdiazgranados/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              linkedin
+            </a>
+
+            <a
+              className={navBubbleClass}
+              href="https://github.com/luisdiazgranados"
+              target="_blank"
+              rel="noreferrer"
+            >
+              github
+            </a>
+
+            <a className={navBubbleClass} href="/blog">
+              blog
+            </a>
+          </nav>
+        </div>
+      </section>
     </>
   );
 }
