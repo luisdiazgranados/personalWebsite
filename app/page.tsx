@@ -423,16 +423,8 @@ function AboutPreview({
 
         {/* Bio - right */}
         <div className="flex shrink-0 flex-col justify-center p-6" style={{ width: "240px" }}>
-          <h2
-            className={`text-[18px] font-semibold tracking-[-0.04em] ${
-              isLightMode ? "text-neutral-950" : "text-neutral-100"
-            }`}
-          >
-            Luis Diaz Granados
-          </h2>
-
           <p
-            className={`mt-3 text-[14px] leading-relaxed tracking-[-0.01em] ${
+            className={`text-[14px] leading-relaxed tracking-[-0.01em] ${
               isLightMode ? "text-neutral-600" : "text-neutral-400"
             }`}
           >
@@ -736,7 +728,7 @@ export default function HomePage() {
 
           {showAbout && (
             <div
-              className={`mt-6 overflow-hidden rounded-2xl border backdrop-blur-[24px] backdrop-saturate-200 ${
+              className={`mt-6 flex overflow-hidden rounded-2xl border backdrop-blur-[24px] backdrop-saturate-200 ${
                 isLightMode
                   ? "border-white/60 bg-white/25 shadow-black/10"
                   : "border-white/15 bg-white/[0.10] shadow-black/40"
@@ -747,27 +739,24 @@ export default function HomePage() {
                   : "0 12px 40px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.10)",
               }}
             >
-              <div className="overflow-x-auto p-4 pb-0">
+              <div
+                className={`flex shrink-0 items-center overflow-auto border-r p-3 ${
+                  isLightMode ? "border-white/30" : "border-white/10"
+                }`}
+              >
                 <pre
                   className={`font-mono leading-[1.1] ${
                     isLightMode ? "text-neutral-800" : "text-neutral-300"
                   }`}
-                  style={{ fontSize: "2.5px" }}
+                  style={{ fontSize: "1.8px" }}
                   aria-label="ASCII art headshot of Luis"
                 >
                   {ASCII_HEADSHOT}
                 </pre>
               </div>
-              <div className="p-4">
-                <h2
-                  className={`text-[16px] font-semibold tracking-[-0.04em] ${
-                    isLightMode ? "text-neutral-950" : "text-neutral-100"
-                  }`}
-                >
-                  Luis Diaz Granados
-                </h2>
+              <div className="flex flex-col justify-center p-4">
                 <p
-                  className={`mt-2 text-[13px] leading-relaxed ${
+                  className={`text-[12px] leading-relaxed ${
                     isLightMode ? "text-neutral-600" : "text-neutral-400"
                   }`}
                 >
