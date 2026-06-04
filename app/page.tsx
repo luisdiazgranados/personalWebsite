@@ -743,12 +743,13 @@ export default function HomePage() {
                 className={`flex shrink-0 items-center overflow-auto border-r p-3 ${
                   isLightMode ? "border-white/30" : "border-white/10"
                 }`}
+                style={{ height: "220px" }}
               >
                 <pre
                   className={`font-mono leading-[1.1] ${
                     isLightMode ? "text-neutral-800" : "text-neutral-300"
                   }`}
-                  style={{ fontSize: "1.8px" }}
+                  style={{ fontSize: "1.8px", minWidth: "max-content" }}
                   aria-label="ASCII art headshot of Luis"
                 >
                   {ASCII_HEADSHOT}
